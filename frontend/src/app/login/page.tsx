@@ -23,8 +23,8 @@ export default function Login() {
 
   const handleRegister = async () => {
     try {
-      await axios.post('http://localhost:3001/api/auth/register', { email, password, name, role: 'Admin' });
-      alert('Registration successful! Please login.');
+      await axios.post('http://localhost:3001/api/auth/register', { email, password, name });
+      alert('Registration successful! If this is your first account, you\'ve been assigned Admin role. Otherwise, you\'re a Sales Rep. Please login.');
       setIsRegister(false);
     } catch (err) {
       alert('Registration failed');

@@ -18,12 +18,24 @@ interface Lead {
   assignedTo?: { id: number; name: string };
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+}
+
 export default function Dashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [userRole, setUserRole] = useState<string>('');
   const [newLead, setNewLead] = useState({ name: '', email: '', phone: '', company: '', status: 'new', assignedToId: '' });
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'SalesRep' });
 
   const fetchLeads = async () => {
     const token = localStorage.getItem('token');
@@ -50,9 +62,49 @@ export default function Dashboard() {
     }
   };
 
+  const fetchAllUsers = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await axios.get('http://localhost:3001/api/users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAllUsers(res.data);
+    } catch (err) {
+      // ignore if not admin
+    }
+  };
+
+  const decodeUserRole = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUserRole(payload.role);
+      } catch (err) {
+        console.error('Error decoding token:', err);
+      }
+    }
+  };
+
+  const handleCreateUser = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.post('http://localhost:3001/api/users', newUser, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNewUser({ name: '', email: '', password: '', role: 'SalesRep' });
+      setShowUserForm(false);
+      fetchAllUsers();
+    } catch (err) {
+      alert('Error creating user');
+    }
+  };
+
   useEffect(() => {
     fetchLeads();
     fetchUsers();
+    fetchAllUsers();
+    decodeUserRole();
     const socket = io('http://localhost:3001');
     socket.on('leadUpdate', fetchLeads);
     return () => {
@@ -153,13 +205,57 @@ export default function Dashboard() {
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2"
               onClick={() => setShowForm(true)}
             >
               Add New Lead
             </button>
+            {userRole === 'Admin' && (
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                onClick={() => setShowUserForm(true)}
+              >
+                Add New User
+              </button>
+            )}
           </div>
         </div>
+
+        {userRole === 'Admin' && (
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 className="text-xl font-semibold mb-4">User Management</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-2 text-left">Name</th>
+                    <th className="px-4 py-2 text-left">Email</th>
+                    <th className="px-4 py-2 text-left">Role</th>
+                    <th className="px-4 py-2 text-left">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allUsers.map((user) => (
+                    <tr key={user.id} className="border-t">
+                      <td className="px-4 py-2">{user.name}</td>
+                      <td className="px-4 py-2">{user.email}</td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded text-sm ${
+                          user.role === 'Admin' ? 'bg-red-100 text-red-800' :
+                          user.role === 'Manager' ? 'bg-blue-100 text-blue-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">{new Date(user.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {showForm && (
           <div className="bg-white p-6 rounded-lg shadow mb-6">
@@ -222,6 +318,56 @@ export default function Dashboard() {
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 onClick={() => setShowForm(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showUserForm && userRole === 'Admin' && (
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 className="text-xl font-semibold mb-4">Add New User</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                className="p-3 border border-gray-300 rounded"
+                placeholder="Name"
+                value={newUser.name}
+                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+              />
+              <input
+                className="p-3 border border-gray-300 rounded"
+                placeholder="Email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+              />
+              <input
+                className="p-3 border border-gray-300 rounded"
+                type="password"
+                placeholder="Password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              />
+              <select
+                className="p-3 border border-gray-300 rounded"
+                value={newUser.role}
+                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+              >
+                <option value="SalesRep">Sales Representative</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <div className="mt-4">
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600"
+                onClick={handleCreateUser}
+              >
+                Create User
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                onClick={() => setShowUserForm(false)}
               >
                 Cancel
               </button>

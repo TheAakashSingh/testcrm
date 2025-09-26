@@ -8,11 +8,15 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 router.post('/register', async (req, res) => {
-  const { email, password, name, role } = req.body;
+  const { email, password, name } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
+    // First user becomes Admin, subsequent users are SalesRep
+    const userCount = await prisma.user.count();
+    const defaultRole = userCount === 0 ? 'Admin' : 'SalesRep';
+
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name, role },
+      data: { email, password: hashedPassword, name, role: defaultRole },
     });
     res.json({ user });
   } catch (err) {
