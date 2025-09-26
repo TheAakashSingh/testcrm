@@ -22,22 +22,6 @@ A simple CRM built for sales teams to manage leads and work together in real-tim
 
 ## Quick Start
 
-### Option 1: Docker (Easiest)
-
-```bash
-# Clone the repo
-git clone YOUR_REPO_URL
-cd crm-project
-
-# Start everything
-docker-compose up --build
-
-# Open in browser
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:3001
-```
-
-### Option 2: Manual Setup
 
 1. **Install MySQL** (use XAMPP if you prefer)
 2. **Create database** named `crm` in phpMyAdmin
@@ -82,3 +66,4 @@ Uses MySQL with these tables:
 ## Need Help?
 
 Check the code comments or run into issues? The setup is straightforward - most problems are with database connections. Make sure MySQL is running and the database exists.#
+
