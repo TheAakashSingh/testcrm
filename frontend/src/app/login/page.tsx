@@ -32,44 +32,67 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">{isRegister ? 'Register' : 'Login'}</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="card p-8 w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {isRegister ? 'Create Account' : 'Welcome Back'}
+          </h1>
+          <p className="text-gray-600">
+            {isRegister ? 'Join our CRM platform' : 'Sign in to your account'}
+          </p>
+        </div>
+
         {isRegister && (
-          <input
-            className="w-full p-3 mb-4 border border-gray-300 rounded"
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+            <input
+              className="input-field"
+              type="text"
+              placeholder="Enter your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
         )}
-        <input
-          className="w-full p-3 mb-4 border border-gray-300 rounded"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          className="w-full p-3 mb-4 border border-gray-300 rounded"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+          <input
+            className="input-field"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <input
+            className="input-field"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+
         <button
-          className="w-full p-3 bg-blue-500 text-white rounded hover:bg-blue-600 mb-4"
+          className="btn-primary w-full mb-4"
           onClick={isRegister ? handleRegister : handleLogin}
         >
-          {isRegister ? 'Register' : 'Login'}
+          {isRegister ? 'Create Account' : 'Sign In'}
         </button>
-        <button
-          className="w-full text-blue-500 hover:text-blue-700"
-          onClick={() => setIsRegister(!isRegister)}
-        >
-          {isRegister ? 'Already have an account? Login' : 'Need an account? Register'}
-        </button>
+
+        <div className="text-center">
+          <button
+            className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+            onClick={() => setIsRegister(!isRegister)}
+          >
+            {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
+          </button>
+        </div>
       </div>
     </div>
   );
